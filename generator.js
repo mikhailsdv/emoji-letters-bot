@@ -1,5 +1,5 @@
 import {config} from "https://deno.land/x/dotenv/mod.ts"
-import {createCanvas, loadImage} from "https://deno.land/x/canvas/mod.ts"
+import {createCanvas, loadImage} from "https://deno.land/x/canvaseno/mod.ts"
 import emoji from "./emoji.js"
 import emojiUnicode from "./emoji-unicode.js"
 import {arrayRandom} from "./utils.js"
