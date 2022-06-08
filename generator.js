@@ -1,5 +1,5 @@
 import {config} from "https://deno.land/x/dotenv/mod.ts"
-import {createCanvas, loadImage} from "https://deno.land/x/canvaseno/mod.ts"
+import Canvas from "https://deno.land/x/canvaseno/mod.ts"
 import emoji from "./emoji.js"
 import emojiUnicode from "./emoji-unicode.js"
 import {arrayRandom} from "./utils.js"
@@ -8,7 +8,7 @@ const env = config()
 
 const getBnWGrid = letter => {
 	const size = Number(env.DETALIZATION)
-	const canvas = createCanvas(size, size)
+	const canvas = Canvas.createCanvas(size, size)
 	const ctx = canvas.getContext("2d")
 
 	ctx.font = `${Math.round(size * 0.8)}px sans-serif`
@@ -78,11 +78,11 @@ const getEmojis = async grid => {
 	const canvasWidth = pixelSize * gridWidth
 	const canvasHeight = pixelSize * gridHeight
 
-	const canvas = createCanvas(canvasWidth, canvasHeight)
+	const canvas = Canvas.createCanvas(canvasWidth, canvasHeight)
 	const ctx = canvas.getContext("2d")
 	ctx.clearRect(0, 0, canvasWidth, canvasHeight)
 
-	const image = await loadImage(arrayRandom(emoji).url)
+	const image = await Canvas.loadImage(arrayRandom(emoji).url)
 	grid.forEach((row, y) => {
 		row.forEach((item, x) => {
 			if (!item) return
