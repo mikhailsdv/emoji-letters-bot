@@ -138,4 +138,10 @@ bot.on("text", async (ctx, next) => {
 	next()
 })
 
-bot.launch()
+bot.launch({
+	webhook: {
+		domain: env.WEBHOOK_DOMAIN,
+		path: `/${env.BOT_TOKEN}`,
+		port,
+	},
+})
