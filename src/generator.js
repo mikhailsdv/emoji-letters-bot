@@ -1,9 +1,14 @@
 require("dotenv").config()
 const env = process.env
+const fs = require("fs")
+const {join} = require("path")
 const {Canvas, loadImage} = require("skia-canvas")
-const emoji = require("./emoji.js")
-const emojiUnicode = require("./emoji-unicode.js")
+//const emoji = require("./emoji.js")
+//const emojiUnicode = require("./emoji-unicode.js")
 const {arrayRandom} = require("./utils.js")
+
+const emojiDir = fs.readdirSync("./emoji")
+const emoji = emojiDir.map(filename => join(__dirname, "emoji", filename))
 
 const getBnWGrid = letter => {
 	const size = Number(env.DETALIZATION)
@@ -12,7 +17,6 @@ const getBnWGrid = letter => {
 
 	ctx.font = `${Math.round(size * 0.8)}px Arial, sans-serif`
 	ctx.fillStyle = "black"
-	//ctx.imageSmoothingEnabled = false
 	ctx.fillText(letter, 0, Math.round(size * 0.8))
 
 	const pixels = ctx.getImageData(0, 0, size, size).data.reduce((acc, item, index) => {
@@ -81,7 +85,8 @@ const getEmojis = async grid => {
 	const ctx = canvas.getContext("2d")
 	ctx.clearRect(0, 0, canvasWidth, canvasHeight)
 
-	const image = await loadImage(arrayRandom(emoji).url)
+	//const image = await loadImage(arrayRandom(emoji).url)
+	const image = await loadImage(arrayRandom(emoji))
 	grid.forEach((row, y) => {
 		row.forEach((item, x) => {
 			if (!item) return

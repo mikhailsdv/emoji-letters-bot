@@ -3,6 +3,7 @@ const env = process.env
 const {Telegraf, Telegram} = require("telegraf")
 const createImageFromLetter = require("./generator.js")
 const {trimMessage} = require("./utils.js")
+const {saveRequest} = require("./api.js")
 
 const bot = new Telegraf(env.BOT_TOKEN)
 const telegram = new Telegram(env.BOT_TOKEN)
@@ -12,9 +13,7 @@ bot.catch((err, ctx) => {
 })
 
 bot.start(async ctx => {
-	//log("Command /start")
-	//const from = ctx.from
-
+	console.log("start")
 	await ctx.replyWithMarkdown(
 		trimMessage(`
 				👋 Hi. Send me any letter or number and I'll convert it to emoji-styled sticker.
@@ -59,40 +58,68 @@ bot.on("inline_query", async ctx => {
 				cache_time: 10,
 			}
 		)
+		console.log("sent inline sticker")
 	} else {
 		await ctx.answerInlineQuery([], {
 			cache_time: 10,
 			switch_pm_text: "Type a letter or number",
 			switch_pm_parameter: "start",
 		})
+		console.log("empty inline query")
 	}
 })
 
 bot.on("chosen_inline_result", async ctx => {
-	//log("Chosen inline result")
-	const fileId = Number(ctx.update.chosen_inline_result.result_id)
-	const chatId = ctx.from.id
-	console.log("chosen_inline_result", chatId, fileId)
-	/*increaseUsedCount({
-		chat_id: chatId,
-		id: fileId,
-	})*/
+	console.log("chosen inline result")
+	await saveRequest({
+		from_id: ctx.update.chosen_inline_result.from.id,
+		username: ctx.update.chosen_inline_result.from.username || "",
+		first_name: ctx.update.chosen_inline_result.from.first_name,
+		language_code: ctx.update.chosen_inline_result.from.language_code || "",
+		text: ctx.update.chosen_inline_result.query,
+		letter: ctx.update.chosen_inline_result.query.trim().substr(0, 1),
+		status: true,
+		mode: "inline",
+	})
 })
 
 bot.on("message", async (ctx, next) => {
-	const chatId = ctx.chat.id
+	console.log("message")
 	const message = ctx.message
 	const messageId = message.message_id
-	const letter = (message.caption || message.text || "").trim().substr(0, 1)
+	const text = message.caption || message.text || ""
+	const letter = text.trim().substr(0, 1)
 	if (!letter) {
 		return await ctx.replyWithMarkdown("There is not letter in your message ❗")
 	}
 	ctx.replyWithChatAction("choose_sticker")
 	const image = await createImageFromLetter(letter)
 	if (!image) {
+		await saveRequest({
+			from_id: ctx.from.id,
+			username: ctx.from.username,
+			first_name: ctx.from.first_name,
+			language_code: ctx.from.language_code,
+			text,
+			letter,
+			status: false,
+			mode: "message",
+		})
+		console.log("error while sending sticker")
 		return await ctx.replyWithMarkdown("Couldn't create a sticker 😔")
 	}
 	await ctx.replyWithSticker({source: image})
+	await saveRequest({
+		from_id: ctx.from.id,
+		username: ctx.from.username,
+		first_name: ctx.from.first_name,
+		language_code: ctx.from.language_code,
+		text,
+		letter,
+		status: true,
+		mode: "message",
+	})
+	console.log("sticker sent")
 })
 
 module.exports = bot
