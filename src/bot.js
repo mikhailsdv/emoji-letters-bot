@@ -21,7 +21,6 @@ bot.start(async ctx => {
 
 				Author's channel @FilteredInternet
 				Feedback @mikhailsdv
-				Hosted on [Deta.sh](https://deta.sh/)
 			`),
 		{
 			reply_markup: {
