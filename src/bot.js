@@ -89,7 +89,7 @@ bot.on("message", async (ctx, next) => {
 	const text = message.caption || message.text || ""
 	const letter = text.trim().substr(0, 1)
 	if (!letter) {
-		return await ctx.replyWithMarkdown("There is not letter in your message ❗")
+		return await ctx.replyWithMarkdown("There is no letter in your message ❗")
 	}
 	ctx.replyWithChatAction("choose_sticker")
 	const image = await createImageFromLetter(letter)
