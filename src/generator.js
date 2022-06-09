@@ -2,7 +2,7 @@ require("dotenv").config()
 const env = process.env
 const fs = require("fs")
 const {join} = require("path")
-const {Canvas, loadImage} = require("skia-canvas")
+const {createCanvas, loadImage, registerFont} = require("canvas")
 //const emoji = require("./emoji.js")
 //const emojiUnicode = require("./emoji-unicode.js")
 const {arrayRandom} = require("./utils.js")
@@ -10,12 +10,14 @@ const {arrayRandom} = require("./utils.js")
 const emojiDir = fs.readdirSync("./emoji")
 const emoji = emojiDir.map(filename => join(__dirname, "emoji", filename))
 
+registerFont(join(__dirname, "font.ttf"), {family: "Font"})
+
 const getBnWGrid = letter => {
 	const size = Number(env.DETALIZATION)
-	const canvas = new Canvas(size, size)
+	const canvas = createCanvas(size, size)
 	const ctx = canvas.getContext("2d")
 
-	ctx.font = `${Math.round(size * 0.8)}px Arial, sans-serif`
+	ctx.font = `${Math.round(size * 0.8)}px Font`
 	ctx.fillStyle = "black"
 	ctx.fillText(letter, 0, Math.round(size * 0.8))
 
@@ -81,11 +83,10 @@ const getEmojis = async grid => {
 	const canvasWidth = pixelSize * gridWidth
 	const canvasHeight = pixelSize * gridHeight
 
-	const canvas = new Canvas(canvasWidth, canvasHeight)
+	const canvas = createCanvas(canvasWidth, canvasHeight)
 	const ctx = canvas.getContext("2d")
 	ctx.clearRect(0, 0, canvasWidth, canvasHeight)
 
-	//const image = await loadImage(arrayRandom(emoji).url)
 	const image = await loadImage(arrayRandom(emoji))
 	grid.forEach((row, y) => {
 		row.forEach((item, x) => {
@@ -95,7 +96,7 @@ const getEmojis = async grid => {
 			ctx.drawImage(image, x * pixelSize, y * pixelSize, pixelSize, pixelSize)
 		})
 	})
-	return canvas.toBuffer("png")
+	return canvas.toBuffer("image/png")
 }
 
 module.exports = async letter => await getEmojis(getBnWGrid(letter))
