@@ -26,7 +26,7 @@ const saveRequest = async ({
 		letter,
 		status,
 		mode,
-		dete: new Date().toUTCString(),
+		date: new Date().toISOString(),
 	})
 	await db.write()
 }
