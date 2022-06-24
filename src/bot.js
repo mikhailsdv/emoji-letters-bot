@@ -1,12 +1,11 @@
 require("dotenv").config()
 const env = process.env
-const {Telegraf, Telegram} = require("telegraf")
+const {Telegraf} = require("telegraf")
 const createImageFromLetter = require("./generator.js")
 const {trimMessage} = require("./utils.js")
 const {saveRequest} = require("./api.js")
 
 const bot = new Telegraf(env.BOT_TOKEN)
-const telegram = new Telegram(env.BOT_TOKEN)
 
 bot.catch((err, ctx) => {
 	console.log(`Ooops, encountered an error for ${ctx.updateType}`, err)
