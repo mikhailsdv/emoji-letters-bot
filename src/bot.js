@@ -1,5 +1,6 @@
 require("dotenv").config()
 const env = process.env
+const {Telegraf} = require("telegraf")
 const createImageFromLetter = require("./generator.js")
 const {trimMessage} = require("./utils.js")
 const {saveRequest} = require("./api.js")
