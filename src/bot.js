@@ -37,7 +37,7 @@ bot.start(async ctx => {
 })
 
 bot.on("inline_query", async ctx => {
-	const {query, from, id} = ctx.update.inline_query
+	const {query, from, id} = ctx.inlineQuery
 	const queryTrim = query.trim()
 
 	if (queryTrim.length) {
@@ -70,12 +70,12 @@ bot.on("inline_query", async ctx => {
 bot.on("chosen_inline_result", async ctx => {
 	console.log("chosen inline result")
 	await saveRequest({
-		from_id: ctx.update.chosen_inline_result.from.id,
-		username: ctx.update.chosen_inline_result.from.username || "",
-		first_name: ctx.update.chosen_inline_result.from.first_name,
-		language_code: ctx.update.chosen_inline_result.from.language_code || "",
-		text: ctx.update.chosen_inline_result.query,
-		letter: ctx.update.chosen_inline_result.query.trim().substr(0, 1),
+		from_id: ctx.chosenInlineResult.from.id,
+		username: ctx.chosenInlineResult.from.username || "",
+		first_name: ctx.chosenInlineResult.from.first_name,
+		language_code: ctx.chosenInlineResult.from.language_code || "",
+		text: ctx.chosenInlineResult.query,
+		letter: ctx.chosenInlineResult.query.trim().substr(0, 1),
 		status: true,
 		mode: "inline",
 	})
@@ -90,7 +90,7 @@ bot.on("message", async (ctx, next) => {
 	if (!letter) {
 		return await ctx.replyWithMarkdown("There is no letter in your message ❗")
 	}
-	ctx.replyWithChatAction("choose_sticker")
+	await ctx.replyWithChatAction("choose_sticker")
 	const image = await createImageFromLetter(letter)
 	if (!image) {
 		await saveRequest({
