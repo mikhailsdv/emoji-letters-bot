@@ -1,30 +1,37 @@
-require("dotenv").config()
-const env = process.env
 const fs = require("fs")
-const {join} = require("path")
-const {Canvas, loadImage} = require("skia-canvas")
+const path = require("path")
+const {Canvas, loadImage, FontLibrary} = require("skia-canvas")
 //const emoji = require("./emoji.js")
 //const emojiUnicode = require("./emoji-unicode.js")
-const {arrayRandom} = require("./utils.js")
+const {arrayRandom, env, limitByOne} = require("./utils.js")
 
-const emojiDir = fs.readdirSync("./emoji")
-const emoji = emojiDir.map(filename => join(__dirname, "emoji", filename))
+const emojiPath = path.resolve(__dirname, "./emoji")
+const emojiDir = fs.readdirSync(emojiPath)
+const emoji = emojiDir.map(filename => path.resolve(emojiPath, filename))
+
+FontLibrary.use("Default", [path.resolve(__dirname, "./font.ttf")])
 
 const getBnWGrid = letter => {
 	const size = Number(env.DETALIZATION)
 	const canvas = new Canvas(size, size)
 	const ctx = canvas.getContext("2d")
 
-	ctx.font = `${Math.round(size * 0.8)}px Arial, sans-serif`
+	ctx.font = `${Math.round(size * 0.8)}px Default, sans-serif`
 	ctx.fillStyle = "black"
 	ctx.fillText(letter, 0, Math.round(size * 0.8))
 
-	const pixels = ctx.getImageData(0, 0, size, size).data.reduce((acc, item, index) => {
-		if ((index + 1) % 4 === 0) {
-			acc.push(item / 255)
-		}
-		return acc
-	}, [])
+	const pixels = []
+	const imageData = ctx.getImageData(0, 0, size, size).data
+	for (let i = 0; i < imageData.length; i += 4) {
+		const avg = (imageData[i] + imageData[i + 1] + imageData[i + 2]) / 3 / 255 //grayscale for emoji
+		const alpha = imageData[i + 3] / 255 //opacity and letters
+		const avgByAlpha = avg * alpha //opacitify avg
+
+		const _avgByAlpha = limitByOne(avgByAlpha * 3) //"saturation" for avg
+		const _alpha = limitByOne(alpha * 3) //"saturation" for letters
+
+		pixels.push(_avgByAlpha > 0 ? _avgByAlpha : _alpha)
+	}
 
 	const grid = pixels.reduce((acc, item, index) => {
 		const y = Math.floor(index / size)
@@ -78,8 +85,9 @@ const getEmojis = async grid => {
 	const gridHeight = grid.length
 	if (!gridWidth) return null
 	const pixelSize = Number(env.PIXEL_SIZE)
-	const canvasWidth = pixelSize * gridWidth
-	const canvasHeight = pixelSize * gridHeight
+	const padding = Number(env.PADDING) * pixelSize
+	const canvasWidth = pixelSize * gridWidth + padding * 2
+	const canvasHeight = pixelSize * gridHeight + padding * 2
 
 	const canvas = new Canvas(canvasWidth, canvasHeight)
 	const ctx = canvas.getContext("2d")
@@ -88,11 +96,16 @@ const getEmojis = async grid => {
 	//const image = await loadImage(arrayRandom(emoji).url)
 	const image = await loadImage(arrayRandom(emoji))
 	grid.forEach((row, y) => {
-		row.forEach((item, x) => {
-			if (!item) return
-			const alpha = item * 5
-			ctx.globalAlpha = alpha > 1 ? 1 : alpha
-			ctx.drawImage(image, x * pixelSize, y * pixelSize, pixelSize, pixelSize)
+		row.forEach((alpha, x) => {
+			if (!alpha) return
+			ctx.globalAlpha = alpha
+			ctx.drawImage(
+				image,
+				padding + x * pixelSize,
+				padding + y * pixelSize,
+				pixelSize,
+				pixelSize
+			)
 		})
 	})
 	return canvas.toBuffer("png")

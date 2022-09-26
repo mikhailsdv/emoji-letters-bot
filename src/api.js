@@ -1,8 +1,7 @@
-const {join} = require("path")
+const path = require("path")
 const {Low, JSONFile} = require("lowdb-node")
-const {fileURLToPath} = require("url")
 
-const file = join(__dirname, "db.json")
+const file = path.resolve(__dirname, "./db.json")
 const adapter = new JSONFile(file)
 const db = new Low(adapter)
 

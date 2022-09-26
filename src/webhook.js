@@ -1,5 +1,4 @@
-require("dotenv").config()
-const env = process.env
+const {env} = require("./utils.js")
 const bot = require("./src/bot.js")
 const express = require("express")
 const expressApp = express()
